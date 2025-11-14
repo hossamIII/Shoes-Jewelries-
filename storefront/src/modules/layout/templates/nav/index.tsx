@@ -6,285 +6,172 @@ import { useParams, usePathname } from "next/navigation"
 import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import HeaderSearch from "@modules/layout/components/header-search"
-import CartButton from "@modules/layout/components/cart-button"
+import CartDropdown from "@modules/layout/components/cart-dropdown"
 import SideMenu from "@modules/layout/components/side-menu"
+import { HttpTypes } from "@medusajs/types"
 
 interface NavProps {
   regions?: StoreRegion[]
+  cart?: HttpTypes.StoreCart | null
 }
 
-export default function Nav({ regions = [] }: NavProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [activeMenu, setActiveMenu] = useState<string | null>(null)
+export default function Nav({ regions = [], cart = null }: NavProps) {
+  const [isSolid, setIsSolid] = useState(false) // solid due to scroll
+  const [navHover, setNavHover] = useState(false) // solid due to hover on header
+  const [activeMenu, setActiveMenu] = useState<string | null>(null) // mega menu open
   const pathname = usePathname()
 
+  // Use a top-of-page sentinel to control solid state reliably across zoom/browsers.
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
+    const sentinel = document.getElementById("page-top-sentinel")
 
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
+    if (sentinel && "IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          // When the sentinel leaves the viewport top, set solid state.
+          setIsSolid(!entry.isIntersecting)
+        },
+        {
+          // Observe exact viewport; turn solid only after real scroll
+          rootMargin: "0px 0px 0px 0px",
+          threshold: 0,
+        }
+      )
+      observer.observe(sentinel)
+      return () => observer.disconnect()
+    } else {
+      // Fallback: simple scroll check
+      const onScroll = () => setIsSolid(window.scrollY > 64)
+      window.addEventListener("scroll", onScroll, { passive: true })
+      return () => window.removeEventListener("scroll", onScroll)
+    }
   }, [])
 
-  // Nordstrom-style category structure
+  // Minimal navigation items
   const categories = [
-    {
-      name: "New",
-      href: "/store",
-      megaMenu: [
-        {
-          title: "Featured",
-          links: [
-            { name: "New Arrivals", href: "/store" },
-            { name: "Best Sellers", href: "/store" },
-            { name: "Trending Now", href: "/store" },
-            { name: "Just In", href: "/store" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Women",
-      href: "/categories/women",
-      megaMenu: [
-        {
-          title: "Shoes",
-          links: [
-            { name: "All Women's Shoes", href: "/categories/women-shoes" },
-            { name: "Sneakers", href: "/categories/women-shoes" },
-            { name: "Boots", href: "/categories/women-shoes" },
-            { name: "Heels", href: "/categories/women-shoes" },
-            { name: "Sandals", href: "/categories/women-shoes" },
-          ],
-        },
-        {
-          title: "Jewelry",
-          links: [
-            { name: "All Jewelry", href: "/categories/jewelry" },
-            { name: "Necklaces", href: "/categories/jewelry" },
-            { name: "Bracelets", href: "/categories/jewelry" },
-            { name: "Earrings", href: "/categories/jewelry" },
-            { name: "Rings", href: "/categories/jewelry" },
-          ],
-        },
-        {
-          title: "Shop by Style",
-          links: [
-            { name: "Casual", href: "/store" },
-            { name: "Formal", href: "/store" },
-            { name: "Work", href: "/store" },
-            { name: "Weekend", href: "/store" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Men",
-      href: "/categories/men",
-      megaMenu: [
-        {
-          title: "Shoes",
-          links: [
-            { name: "All Men's Shoes", href: "/categories/men-shoes" },
-            { name: "Sneakers", href: "/categories/men-shoes" },
-            { name: "Boots", href: "/categories/men-shoes" },
-            { name: "Dress Shoes", href: "/categories/men-shoes" },
-            { name: "Loafers", href: "/categories/men-shoes" },
-          ],
-        },
-        {
-          title: "Jewelry",
-          links: [
-            { name: "All Jewelry", href: "/categories/jewelry" },
-            { name: "Watches", href: "/categories/jewelry" },
-            { name: "Bracelets", href: "/categories/jewelry" },
-            { name: "Chains", href: "/categories/jewelry" },
-          ],
-        },
-        {
-          title: "Shop by Style",
-          links: [
-            { name: "Casual", href: "/store" },
-            { name: "Formal", href: "/store" },
-            { name: "Athletic", href: "/store" },
-            { name: "Workplace", href: "/store" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Shoes",
-      href: "/categories/shoes",
-      megaMenu: [
-        {
-          title: "Women's Shoes",
-          links: [
-            { name: "All Women's Shoes", href: "/categories/women-shoes" },
-            { name: "Sneakers", href: "/categories/women-shoes" },
-            { name: "Boots", href: "/categories/women-shoes" },
-            { name: "Heels & Pumps", href: "/categories/women-shoes" },
-            { name: "Flats & Loafers", href: "/categories/women-shoes" },
-          ],
-        },
-        {
-          title: "Men's Shoes",
-          links: [
-            { name: "All Men's Shoes", href: "/categories/men-shoes" },
-            { name: "Sneakers", href: "/categories/men-shoes" },
-            { name: "Boots", href: "/categories/men-shoes" },
-            { name: "Dress Shoes", href: "/categories/men-shoes" },
-            { name: "Casual Shoes", href: "/categories/men-shoes" },
-          ],
-        },
-        {
-          title: "By Brand",
-          links: [
-            { name: "Nike", href: "/store" },
-            { name: "Adidas", href: "/store" },
-            { name: "Puma", href: "/store" },
-            { name: "New Balance", href: "/store" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Jewelry",
-      href: "/categories/jewelry",
-      megaMenu: [
-        {
-          title: "Shop by Type",
-          links: [
-            { name: "All Jewelry", href: "/categories/jewelry" },
-            { name: "Necklaces & Pendants", href: "/categories/jewelry" },
-            { name: "Bracelets & Bangles", href: "/categories/jewelry" },
-            { name: "Earrings", href: "/categories/jewelry" },
-            { name: "Rings", href: "/categories/jewelry" },
-          ],
-        },
-        {
-          title: "By Material",
-          links: [
-            { name: "Gold", href: "/store" },
-            { name: "Silver", href: "/store" },
-            { name: "Platinum", href: "/store" },
-            { name: "Gemstone", href: "/store" },
-          ],
-        },
-        {
-          title: "Collections",
-          links: [
-            { name: "Classic", href: "/store" },
-            { name: "Modern", href: "/store" },
-            { name: "Vintage", href: "/store" },
-            { name: "Designer", href: "/store" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Sale",
-      href: "/store",
-      megaMenu: [
-        {
-          title: "Shop Sale",
-          links: [
-            { name: "Women's Sale", href: "/store" },
-            { name: "Men's Sale", href: "/store" },
-            { name: "Shoes Sale", href: "/store" },
-            { name: "Jewelry Sale", href: "/store" },
-            { name: "Clearance", href: "/store" },
-          ],
-        },
-      ],
-    },
+    { name: "Shoes", href: "/categories/shoes" },
+    { name: "Jewelry", href: "/categories/jewelry" },
   ]
 
+  // Derived states for styling (solid when scrolled OR hovered OR menu open)
+  const headerShadow = isSolid || navHover || !!activeMenu
+  const isSolidFinal = isSolid || navHover || !!activeMenu
+
   return (
-    <nav className={`header-sticky ${isScrolled ? "header-sticky-shadow" : ""}`}>
-      {/* Promotional Banner */}
-      <div className="bg-grey-90 text-grey-0 text-center py-2 md:py-3 text-xs md:text-sm tracking-wide hidden md:block">
-        <p>FREE SHIPPING ON ORDERS OVER $89 • FREE RETURNS</p>
+    <nav className={`header-sticky ${headerShadow ? "header-sticky-shadow" : ""}`}>
+      {/* Promotional Ticker – compact, animated */}
+      <div className="bg-grey-90 text-grey-0 overflow-hidden border-b border-grey-80">
+        <div className="ticker h-5 md:h-6">
+          <div className="ticker-track animate-marquee">
+            <span className="ticker-item">12% FOR VIP MEMBERS</span>
+            <span className="ticker-sep">—</span>
+            <span className="ticker-item">FREE SHIPPING ON ORDERS OVER $100</span>
+            <span className="ticker-sep">—</span>
+            <span className="ticker-item">12% FOR VIP MEMBERS</span>
+          </div>
+          <div className="ticker-track animate-marquee2" aria-hidden>
+            <span className="ticker-item">12% FOR VIP MEMBERS</span>
+            <span className="ticker-sep">—</span>
+            <span className="ticker-item">FREE SHIPPING ON ORDERS OVER $100</span>
+            <span className="ticker-sep">—</span>
+            <span className="ticker-item">12% FOR VIP MEMBERS</span>
+          </div>
+        </div>
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="border-b border-grey-20">
+      <div
+        className={`${isSolidFinal ? "bg-white border-grey-20 shadow-sm" : "bg-transparent border-transparent"} border-b transition-colors duration-300 relative`}
+        onMouseEnter={() => setNavHover(true)}
+        onMouseLeave={() => setNavHover(false)}
+      >
         <div className="nordstrom-container">
-          {/* Desktop & Mobile Layout */}
-          <div className="flex items-center justify-between h-14 md:h-16">
-            {/* Left: Logo & Mobile Menu */}
+          {/* Desktop & Mobile Layout: three columns with centered brand */}
+          <div className="grid grid-cols-3 items-center h-14 md:h-16">
+            {/* Left: Mobile menu + left categories */}
             <div className="flex items-center gap-4">
               <div className="md:hidden">
                 <SideMenu regions={regions} />
               </div>
+              <div className="hidden md:flex items-center gap-8">
+                {categories.map((category) => (
+                  <div
+                    key={category.name}
+                    className="group relative"
+                    onMouseEnter={() => setActiveMenu(category.name)}
+                    onMouseLeave={() => setActiveMenu(null)}
+                  >
+                    <LocalizedClientLink
+                      href={category.href}
+                      className={`nav-link-primary ${isSolidFinal ? "text-grey-90 hover:text-grey-70" : "text-white hover:text-grey-5"}`}
+                    >
+                      {category.name}
+                    </LocalizedClientLink>
+
+                    {/* Partial-width Mega Menu anchored under this item */}
+                    {activeMenu === category.name && (
+                      <div className="absolute left-0 top-full w-[60vw] max-w-[760px] bg-white border-t border-grey-20 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-in-out z-50">
+                        <div className="p-6">
+                          <div className="grid grid-cols-3 gap-8">
+                            <div className="mega-menu-column">
+                              <div className="mega-menu-title">Featured</div>
+                              <ul className="space-y-2">
+                                <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">New In</LocalizedClientLink></li>
+                                <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Best Sellers</LocalizedClientLink></li>
+                                <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Collections</LocalizedClientLink></li>
+                              </ul>
+                            </div>
+                            <div className="mega-menu-column">
+                              <div className="mega-menu-title">Categories</div>
+                              <ul className="space-y-2">
+                                {category.name === "Shoes" ? (
+                                  <>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Sneakers</LocalizedClientLink></li>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Boots</LocalizedClientLink></li>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Slides</LocalizedClientLink></li>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Trainers</LocalizedClientLink></li>
+                                  </>
+                                ) : (
+                                  <>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Chains</LocalizedClientLink></li>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Pendants</LocalizedClientLink></li>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Bracelets</LocalizedClientLink></li>
+                                    <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Rings</LocalizedClientLink></li>
+                                  </>
+                                )}
+                              </ul>
+                            </div>
+                            <div className="mega-menu-column">
+                              <div className="mega-menu-title">Shop</div>
+                              <ul className="space-y-2">
+                                <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Shop All {category.name}</LocalizedClientLink></li>
+                                <li><LocalizedClientLink href={category.href} className="text-grey-90 hover:text-grey-70">Sale</LocalizedClientLink></li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Center: Brand */}
+            <div className="flex justify-center">
               <LocalizedClientLink
                 href="/"
-                className="text-lg md:text-2xl font-semibold tracking-widest text-grey-90 hover:text-grey-70 transition-colors"
+                className={`text-xl md:text-2xl font-display font-semibold tracking-[0.18em] transition-colors ${isSolidFinal ? "text-grey-90 hover:text-grey-70" : "text-white hover:text-grey-5"}`}
               >
-                STORE
+                MORPHEUS
               </LocalizedClientLink>
             </div>
 
-            {/* Center: Desktop Navigation (Hidden on Mobile) */}
-            <div className="hidden lg:flex items-center gap-8">
-              {categories.map((category) => (
-                <div
-                  key={category.name}
-                  className="group relative"
-                  onMouseEnter={() => setActiveMenu(category.name)}
-                  onMouseLeave={() => setActiveMenu(null)}
-                >
-                  <LocalizedClientLink
-                    href={category.href}
-                    className="nav-link-primary"
-                  >
-                    {category.name}
-                  </LocalizedClientLink>
-
-                  {/* Mega Menu */}
-                  {category.megaMenu && (
-                    <div className="mega-menu">
-                      <div className="nordstrom-container">
-                        <div className="grid grid-cols-3 gap-8">
-                          {category.megaMenu.map((section, idx) => (
-                            <div
-                              key={`${category.name}-${idx}`}
-                              className="mega-menu-column"
-                            >
-                              <h3 className="mega-menu-title">
-                                {section.title}
-                              </h3>
-                              <ul className="space-y-2">
-                                {section.links.map((link) => (
-                                  <li key={link.name}>
-                                    <LocalizedClientLink
-                                      href={link.href}
-                                      className="nav-link-secondary"
-                                    >
-                                      {link.name}
-                                    </LocalizedClientLink>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Right: Actions (Search, Account, Cart) */}
-            <div className="flex items-center gap-4 md:gap-6">
-              <Suspense fallback={<div className="w-5 h-5" />}>
-                <HeaderSearch />
-              </Suspense>
-
+            {/* Right: Account + Cart */}
+            <div className="flex items-center justify-end gap-4 md:gap-6">
               <LocalizedClientLink
                 href="/account"
-                className="text-grey-90 hover:text-grey-60 transition-colors text-sm md:text-base"
+                className={`transition-colors text-sm md:text-base ${isSolidFinal ? "text-grey-90 hover:text-grey-60" : "text-white hover:text-grey-5"}`}
               >
                 <span className="hidden md:inline text-xs uppercase font-semibold tracking-wide">
                   Account
@@ -292,12 +179,16 @@ export default function Nav({ regions = [] }: NavProps) {
                 <span className="md:hidden">👤</span>
               </LocalizedClientLink>
 
-              <Suspense fallback={<div className="w-5 h-5" />}>
-                <CartButton />
+              <Suspense fallback={<div className="w-5 h-5" />}> 
+                <div className={`${isSolidFinal ? "text-grey-90" : "text-white"}`}>
+                  <CartDropdown cart={cart} />
+                </div>
               </Suspense>
             </div>
           </div>
         </div>
+
+        {/* Global mega menu removed per request; per-item partial panels retained */}
       </div>
     </nav>
   )

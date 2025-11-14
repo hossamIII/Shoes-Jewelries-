@@ -35,12 +35,33 @@ const Summary = ({ cart }: SummaryProps) => {
       <DiscountCode cart={cart} />
       <Divider />
       <CartTotals totals={cart} />
-      <LocalizedClientLink
-        href={"/checkout?step=" + step}
-        data-testid="checkout-button"
-      >
-        <Button className="w-full h-10">Go to checkout</Button>
-      </LocalizedClientLink>
+      <div className="space-y-3">
+        {/* WhatsApp Deposit - Active */}
+        <a
+          href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+            `Hi! I'd like to complete my order with a deposit payment. Cart total: $${((cart?.total || 0) / 100).toFixed(2)}`
+          )}`}
+          className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white px-6 py-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16.5 14.5c-.4-.2-2.3-1.1-2.6-1.2-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6 0-.3-.2-1.3-.5-2.5-1.7-.9-.8-1.6-1.8-1.8-2.1-.2-.3 0-.5.1-.7.1-.2.3-.5.5-.7.2-.2.2-.4.3-.6.1-.2 0-.5-.1-.7-.1-.2-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5H6.5c-.2 0-.5.2-.7.4-.7.7-1.1 1.7-1.1 2.7 0 .9.3 1.8.8 2.6 0 0 2.5 4 6.3 5.6 3.8 1.6 3.8 1.1 4.5 1 .7-.1 2.3-.9 2.6-1.8.3-.9.3-1.7.2-1.8-.1-.1-.4-.2-.6-.3z"></path>
+          </svg>
+          Complete Order via WhatsApp
+        </a>
+
+        {/* Stripe Checkout - Disabled for Now */}
+        <button
+          disabled
+          className="w-full bg-grey-20 text-grey-40 px-6 py-4 rounded-lg font-semibold cursor-not-allowed relative"
+          data-testid="checkout-button"
+          title="Checkout (Coming Soon)"
+        >
+          Checkout (Coming Soon)
+          <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+            Soon
+          </span>
+        </button>
+      </div>
     </div>
   )
 }
