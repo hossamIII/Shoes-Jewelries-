@@ -114,7 +114,7 @@ export default async function seedShipRankShippingOptions({ container }: ExecArg
   
   // Get service zones for this fulfillment set
   const serviceZones = await fulfillmentModuleService.listServiceZones({
-    fulfillment_set_id: fulfillmentSet.id
+    fulfillment_set: { id: fulfillmentSet.id }
   });
   
   if (!serviceZones.length) {
@@ -139,9 +139,7 @@ export default async function seedShipRankShippingOptions({ container }: ExecArg
   logger.info(`Found ${regions.length} regions`);
 
   // Delete existing ShipRank options
-  const existingOptions = await fulfillmentModuleService.listShippingOptions({
-    provider_id: providerId
-  });
+  const existingOptions = await fulfillmentModuleService.listShippingOptions({});
 
   if (existingOptions.length > 0) {
     logger.info(`Deleting ${existingOptions.length} existing ShipRank shipping options...`);
@@ -190,20 +188,6 @@ export default async function seedShipRankShippingOptions({ container }: ExecArg
               id: option.id, // ShipRank shipping option ID
               shiprank_id: option.id,
             },
-            prices: [
-              {
-                currency_code: "usd",
-                amount: option.basePrice,
-              },
-              {
-                currency_code: "eur",
-                amount: option.basePrice,
-              },
-              ...regions.map(region => ({
-                region_id: region.id,
-                amount: option.basePrice,
-              })),
-            ],
             rules: [
               {
                 attribute: "enabled_in_store",

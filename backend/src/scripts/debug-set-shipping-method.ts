@@ -1,6 +1,6 @@
 import { ExecArgs } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
-import { setShippingMethodsOnCartWorkflow } from "@medusajs/medusa/core-flows"
+import { addShippingMethodToCartWorkflow } from "@medusajs/medusa/core-flows"
 
 export default async function debugSetShippingMethod({ container }: ExecArgs) {
     const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
@@ -28,9 +28,7 @@ export default async function debugSetShippingMethod({ container }: ExecArgs) {
     // 2. List Shipping Options for this Cart
     // We need to simulate what the storefront does: list-shipping-options
     // But here we can just list all options and try to match one
-    const options = await fulfillmentModuleService.listShippingOptions({
-        provider_id: "external-shipping_external-shipping"
-    })
+    const options = await fulfillmentModuleService.listShippingOptions({})
 
     if (options.length === 0) {
         logger.warn("No external shipping options found in DB.")
@@ -42,15 +40,11 @@ export default async function debugSetShippingMethod({ container }: ExecArgs) {
 
     // 3. Attempt to Set Shipping Method
     try {
-        await setShippingMethodsOnCartWorkflow(container).run({
+        await addShippingMethodToCartWorkflow(container).run({
             input: {
                 cart_id: cart.id,
-                shipping_methods: [
-                    {
-                        shipping_option_id: optionToTest.id,
-                    }
-                ]
-            }
+                shipping_option_id: optionToTest.id
+            } as any
         })
         logger.info("Successfully set shipping method!")
     } catch (e) {

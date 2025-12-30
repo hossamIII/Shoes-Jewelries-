@@ -84,7 +84,6 @@ export default async function syncShiprankOptions({ container }: ExecArgs) {
                     shipping_profile_id: defaultProfile.id,
                     type: { label: "ShipRank", description: srOpt.name, code: "shiprank" },
                     data: { id: srOpt.id, name: srOpt.name, rate },
-                    prices: [],
                     rules: [
                         { attribute: "enabled_in_store", value: "true", operator: "eq" },
                         { attribute: "is_return", value: "false", operator: "eq" }

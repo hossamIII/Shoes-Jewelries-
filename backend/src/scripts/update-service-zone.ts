@@ -35,7 +35,7 @@ export default async function updateServiceZone({ container }: ExecArgs) {
         geoZonesToAdd.map(gz => ({
             ...gz,
             service_zone_id: serviceZoneId
-        }))
+        })) as any
     )
 
     logger.info("Successfully updated Service Zone.")

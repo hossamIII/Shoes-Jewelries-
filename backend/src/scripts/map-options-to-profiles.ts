@@ -23,7 +23,7 @@ export default async function mapOptionsToProfiles({ container }: ExecArgs) {
         logger.info(`  ID: ${opt.id}`)
         logger.info(`  Profile: ${opt.shipping_profile?.name} (${opt.shipping_profile_id})`)
         logger.info(`  Price Type: ${opt.price_type}`)
-        logger.info(`  Amount: ${opt.prices?.[0]?.amount ?? 'N/A'}`) // Check price if loaded
+        logger.info(`  Amount: N/A`)
     }
 
     logger.info("--- End Mapping ---")

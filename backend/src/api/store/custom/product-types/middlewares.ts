@@ -14,7 +14,7 @@ export const adminProductTypeRoutesMiddlewares: MiddlewareRoute[] = [
     matcher: '/store/custom/product-types',
     middlewares: [
       validateAndTransformQuery(
-        AdminGetProductTypesParams,
+        AdminGetProductTypesParams as any,
         QueryConfig.listProductTypesTransformQueryConfig,
       ),
     ],
@@ -24,7 +24,7 @@ export const adminProductTypeRoutesMiddlewares: MiddlewareRoute[] = [
     matcher: '/store/custom/product-types/:id',
     middlewares: [
       validateAndTransformQuery(
-        AdminGetProductTypeParams,
+        AdminGetProductTypeParams as any,
         QueryConfig.retrieveProductTypeTransformQueryConfig,
       ),
     ],
