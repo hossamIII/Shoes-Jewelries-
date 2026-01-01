@@ -11,10 +11,22 @@ export const IS_DEV = process.env.NODE_ENV === 'development'
 
 const sanitizeEnv = (val: string | undefined) => val?.replace(/["'`\s]/g, "");
 
+const getBackendUrl = () => {
+  const manualUrl = sanitizeEnv(process.env.BACKEND_PUBLIC_URL);
+  if (manualUrl) return manualUrl;
+
+  const railwayUrl = sanitizeEnv(process.env.RAILWAY_PUBLIC_DOMAIN_VALUE);
+  if (railwayUrl) {
+    return railwayUrl.startsWith('http') ? railwayUrl : `https://${railwayUrl}`;
+  }
+
+  return 'http://localhost:9000';
+}
+
 /**
  * Public URL for the backend
  */
-export const BACKEND_URL = sanitizeEnv(process.env.BACKEND_PUBLIC_URL) ?? (sanitizeEnv(process.env.RAILWAY_PUBLIC_DOMAIN_VALUE) ? `https://${sanitizeEnv(process.env.RAILWAY_PUBLIC_DOMAIN_VALUE)}` : 'http://localhost:9000')
+export const BACKEND_URL = getBackendUrl();
 
 /**
  * Database URL for Postgres instance used by the backend
