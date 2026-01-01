@@ -9,10 +9,12 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd())
  */
 export const IS_DEV = process.env.NODE_ENV === 'development'
 
+const sanitizeEnv = (val: string | undefined) => val?.replace(/["'`\s]/g, "");
+
 /**
  * Public URL for the backend
  */
-export const BACKEND_URL = process.env.BACKEND_PUBLIC_URL ?? (process.env.RAILWAY_PUBLIC_DOMAIN_VALUE ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN_VALUE}` : 'http://localhost:9000')
+export const BACKEND_URL = sanitizeEnv(process.env.BACKEND_PUBLIC_URL) ?? (sanitizeEnv(process.env.RAILWAY_PUBLIC_DOMAIN_VALUE) ? `https://${sanitizeEnv(process.env.RAILWAY_PUBLIC_DOMAIN_VALUE)}` : 'http://localhost:9000')
 
 /**
  * Database URL for Postgres instance used by the backend
@@ -30,17 +32,17 @@ export const REDIS_URL = process.env.REDIS_URL;
 /**
  * Admin CORS origins
  */
-export const ADMIN_CORS = process.env.ADMIN_CORS ?? BACKEND_URL;
+export const ADMIN_CORS = sanitizeEnv(process.env.ADMIN_CORS) ?? BACKEND_URL;
 
 /**
  * Auth CORS origins
  */
-export const AUTH_CORS = process.env.AUTH_CORS ?? BACKEND_URL;
+export const AUTH_CORS = sanitizeEnv(process.env.AUTH_CORS) ?? BACKEND_URL;
 
 /**
  * Store/frontend CORS origins
  */
-export const STORE_CORS = process.env.STORE_CORS;
+export const STORE_CORS = sanitizeEnv(process.env.STORE_CORS);
 
 /**
  * JWT Secret used for signing JWT tokens
