@@ -66,6 +66,8 @@ const medusaConfig = {
           __AUTH_TYPE__: JSON.stringify("session"),
           __BACKEND_URL__: JSON.stringify(BACKEND_URL),
           __BASE__: JSON.stringify("/app"),
+          __JWT_TOKEN_STORAGE_KEY__: JSON.stringify("medusa_admin_jwt"),
+          __COOKIE_TOKEN_STORAGE_KEY__: JSON.stringify("medusa_admin_token"),
         }
       }
     }
