@@ -57,6 +57,18 @@ const medusaConfig = {
   admin: {
     backendUrl: BACKEND_URL,
     disable: SHOULD_DISABLE_ADMIN,
+    path: "/app",
+    vite: (config) => {
+      return {
+        ...config,
+        define: {
+          ...config.define,
+          __AUTH_TYPE__: JSON.stringify("session"),
+          __BACKEND_URL__: JSON.stringify(BACKEND_URL),
+          __BASE__: JSON.stringify("/app"),
+        }
+      }
+    }
   },
   modules: [
     {
