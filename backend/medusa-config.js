@@ -29,6 +29,12 @@ import {
 
 loadEnv(process.env.NODE_ENV, process.cwd());
 
+console.log("Loading Medusa Config...");
+console.log("BACKEND_URL:", BACKEND_URL);
+console.log("ADMIN_CORS:", ADMIN_CORS);
+console.log("AUTH_CORS:", AUTH_CORS);
+console.log("STORE_CORS:", STORE_CORS);
+
 const medusaConfig = {
   projectConfig: {
     databaseUrl: DATABASE_URL,
